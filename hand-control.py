@@ -68,6 +68,7 @@ def motorDirection(category_name: str = 'none'):
 	
 	i = 0
 	def forwardMotor(left: bool):
+		global pwm_back_left, pwm_back_right, pwm_forward_left,pwm_forward_right, max_speed, l_state, r_state, prevTimeL, prevTimeR
 		if(left):
 			if(pwm_forward_left < max_speed):
 				if(l_state == "off"):
@@ -98,6 +99,7 @@ def motorDirection(category_name: str = 'none'):
 				pwm_forward_right = max_speed
 	
 	def backwardMotor(left: bool):
+		global pwm_back_left, pwm_back_right, pwm_forward_left,pwm_forward_right, max_speed, l_state, r_state, prevTimeL, prevTimeR
 		if(left):
 			if(pwm_back_left < max_speed):
 				if(l_state == "off"):
