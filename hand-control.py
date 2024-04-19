@@ -52,16 +52,6 @@ forward_right_motor = GPIO.PWM(19,freq)
 backward_right_motor.start(0)
 forward_right_motor.start(0)
 
-global pwm_back_left
-global pwm_back_right
-global pwm_forward_left 
-global pwm_forward_right 
-global max_speed 
-global l_state 
-global r_state 
-global prevTimeL
-global prevTimeR
-
 pwm_back_left = 0
 pwm_back_right = 0
 pwm_forward_left = 0
@@ -73,156 +63,96 @@ prevTimeL = time.time()
 prevTimeR = time.time()
 
 
-def forwardLeftMotor():
-	if(pwm_forward_left < max_speed):
-		if(l_state == "off"):
-			currTimeL = time.time()
-			prevTimeL = time.time()
-			l_state = "ramping"
-		elif(l_state == "ramping"):
-			currTimeL = time.time()
-			if(currTimeL - prevTimeL >= 0.5):
-				pwm_forward_left = pwm_forward_left + 5 
-				prevTimeL = currTimeL
+def motorDirection(category_name: str = 'none'):
+	global pwm_back_left, pwm_back_right, pwm_forward_left,pwm_forward_right, max_speed, l_state, r_state, prevTimeL, prevTimeR
+	
+	i = 0
+	def forwardMotor(left: bool):
+		if(left):
+			if(pwm_forward_left < max_speed):
+				if(l_state == "off"):
+					currTimeL = time.time()
+					prevTimeL = time.time()
+					l_state = "ramping"
+				elif(l_state == "ramping"):
+					currTimeL = time.time()
+					if(currTimeL - prevTimeL >= 0.5):
+						pwm_forward_left = pwm_forward_left + 5 
+						prevTimeL = currTimeL
+			else:
+				l_state = "at speed"			
+				pwm_forward_left = max_speed
+		else:
+			if(pwm_forward_right < max_speed):
+				if(r_state == "off"):
+					currTimeR = time.time()
+					prevTimeR = time.time()
+					r_state = "ramping"
+				elif(r_state == "ramping"):
+					currTimeR = time.time()
+					if(currTimeR - prevTimeR >= 0.5):
+						pwm_forward_right = pwm_forward_right + 5 
+						prevTimeR = currTimeR
+			else:
+				r_state = "at speed"
+				pwm_forward_right = max_speed
+	
+	def backwardMotor(left: bool):
+		if(left):
+			if(pwm_back_left < max_speed):
+				if(l_state == "off"):
+					currTimeL = time.time()
+					prevTimeL = time.time()
+					l_state = "ramping"
+				elif(l_state == "ramping"):
+					currTimeL = time.time()
+					if(currTimeL - prevTimeL >= 0.5):
+						pwm_back_left = pwm_back_left + 5 
+						prevTimeL = currTimeL
+			else:
+				l_state = "at speed"			
+				pwm_back_left = max_speed
+		else:
+			if(pwm_back_right < max_speed):
+				if(r_state == "off"):
+					currTimeR = time.time()
+					prevTimeR = time.time()
+					r_state = "ramping"
+				elif(r_state == "ramping"):
+					currTimeR = time.time()
+					if(currTimeR - prevTimeR >= 0.5):
+						pwm_back_right = pwm_back_right + 5 
+						prevTimeR = currTimeR
+			else:
+				r_state = "at speed"
+				pwm_back_right = max_speed
+    
+	if category_name == "forward":
+		forwardMotor(True)
+		forwardMotor(False)
+	elif category_name == "backward":
+		backwardMotor(True)
+		backwardMotor(False)
+	elif category_name == "left":
+		forwardMotor(True)
+		r_state = "off"
+		pwm_back_right = 0
+		pwm_forward_right = 0
+	elif category_name == "right":
+		forwardMotor(False)
+		l_state = "off"
+		pwm_back_left = 0
+		pwm_forward_left = 0
+	elif category_name == "stop":
+		r_state = "off"
+		pwm_back_right = 0
+		pwm_forward_right = 0
+		l_state = "off"
 	else:
-		l_state = "at speed"			
-		pwm_forward_left = max_speed
-
-def forwardRightMotor():
-	if(pwm_forward_right < max_speed):
-		if(r_state == "off"):
-			currTimeR = time.time()
-			prevTimeR = time.time()
-			r_state = "ramping"
-		elif(r_state == "ramping"):
-			currTimeR = time.time()
-			if(currTimeR - prevTimeR >= 0.5):
-				pwm_forward_right = pwm_forward_right + 5 
-				prevTimeR = currTimeR
-	else:
-		r_state = "at speed"
-		pwm_forward_right = max_speed
-
-def backwardLeftMotor():
-	if(pwm_back_left < max_speed):
-		if(l_state == "off"):
-			currTimeL = time.time()
-			prevTimeL = time.time()
-			l_state = "ramping"
-		elif(l_state == "ramping"):
-			currTimeL = time.time()
-			if(currTimeL - prevTimeL >= 0.5):
-				pwm_back_left = pwm_back_left + 5 
-				prevTimeL = currTimeL
-	else:
-		l_state = "at speed"			
-		pwm_back_left = max_speed
-
-def backwardRightMotor():
-	if(pwm_back_right < max_speed):
-		if(r_state == "off"):
-			currTimeR = time.time()
-			prevTimeR = time.time()
-			r_state = "ramping"
-		elif(r_state == "ramping"):
-			currTimeR = time.time()
-			if(currTimeR - prevTimeR >= 0.5):
-				pwm_back_right = pwm_back_right + 5 
-				prevTimeR = currTimeR
-	else:
-		r_state = "at speed"
-		pwm_back_right = max_speed
-
-
-
-
-# i = 0
-# while True:
-# 	forward_left_motor.ChangeDutyCycle(pwm_forward_left)
-# 	forward_right_motor.ChangeDutyCycle(pwm_forward_right)
-# 	backward_left_motor.ChangeDutyCycle(pwm_back_left)
-# 	backward_right_motor.ChangeDutyCycle(pwm_back_right)
-
-
-
-
-# 	print("Left (Q) " + str(pwm_forward_left))
-# 	print("Right (P) " + str(pwm_forward_right))
-# 	if (keyboard.is_pressed('q')): //forward left
-# 		if(pwm_forward_left < max_speed):
-# 			if(l_state == "off"):
-# 				currTimeL = time.time()
-# 				prevTimeL = time.time()
-# 				l_state = "ramping"
-# 			elif(l_state == "ramping"):
-# 				currTimeL = time.time()
-# 				if(currTimeL - prevTimeL >= 0.5):
-# 					pwm_forward_left = pwm_forward_left + 5 
-# 					prevTimeL = currTimeL
-# 		else:
-# 			l_state = "at speed"			
-# 			pwm_forward_left = max_speed
-# 		print ("button 1 was pushed")
-# 	else:
-# 		l_state = "off"
-# 		pwm_forward_left = 0
-
-# 	if keyboard.is_pressed('e'): //back left
-# 		if(pwm_back_left < max_speed):
-# 			currTimeL = time.time()
-# 			if(currTimeL - prevTimeL >= 0.5):
-# 				pwm_back_left= pwm_back_left + 5 
-# 				prevTimeL = currTimeL
-# 		else:
-# 			pwm_back_left = max_speed
-# 	else:
-# 		pwm_back_left = 0
-# 		prevTimeL = time.time()
-		
-# 	if keyboard.is_pressed('i'): //back right
-# 		backward_right_motor.ChangeDutyCycle(45)
-# 	else:
-# 		backward_right_motor.ChangeDutyCycle(0)
-		
-# 	if keyboard.is_pressed('i'): //back right
-# 		if(pwm_back_right < max_speed):
-# 			currTimeR = time.time()
-# 			if(currTimeR - prevTimeR >= 0.5):
-# 				pwm_back_right = pwm_back_right + 5 
-# 				prevTimeR = currTimeR
-# 		else:
-# 			pwm_back_right = max_speed
-# 	else:
-# 		pwm
-
-def goForward():
-	forwardLeftMotor()
-	forwardRightMotor()
-
-def goBackward():
-	backwardLeftMotor()
-	backwardRightMotor()
-
-def goLeft():
-	forwardLeftMotor()
-	r_state = "off"
-	pwm_back_right = 0
-	pwm_forward_right = 0
-
-def goRight():
-	forwardRightMotor()
-	l_state = "off"
-	pwm_back_left = 0
-	pwm_forward_left = 0
-
-def none():
-	r_state = "off"
-	pwm_back_right = 0
-	pwm_forward_right = 0
-	l_state = "off"
-	pwm_back_left = 0
-	pwm_forward_left = 0
-
+		r_state = "off"
+		pwm_back_right = 0
+		pwm_forward_right = 0
+		l_state = "off"
 
 
 def get_control(model: str, num_hands: int,
@@ -305,19 +235,7 @@ def get_control(model: str, num_hands: int,
 					gesture = recognition_result_list[0].gestures[hand_index]
 					category_name = gesture[0].category_name
 					print(category_name)
-
-					if category_name == "forward":
-						goForward()
-					elif category_name == "backward":
-						goBackward()
-					elif category_name == "left":
-						goLeft()
-					elif category_name == "right":
-						goRight()
-					elif category_name == "stop":
-						none()
-					else:
-						none()
+					motorDirection(category_name=category_name)
 
 		recognition_frame = current_frame
 		recognition_result_list.clear()
@@ -343,58 +261,3 @@ if __name__ == '__main__':
 	get_control('my_gesture_recognizer.task', 1, 0.8,
 			0.5, 0.5,
 			0, 640, 480)
-
-#from gpiozero import button
-
-
-
-
-#button_1 = Button(36)
-#button_2 = Button(38)
-#
-
-# freq = 500
-# forward_left_motor = GPIO.PWM(ledpin, freq)	#create PWM instance with frequency
-# backward_left_motor = GPIO.PWM(13,freq)
-# forward_left_motor.start(0)				#start PWM of required Duty Cycle 
-# backward_left_motor.start(0)				#start PWM of required Duty Cycle 
-
-# backward_right_motor = GPIO.PWM(18, freq)
-# forward_right_motor = GPIO.PWM(19,freq)
-# backward_right_motor.start(0)
-# forward_right_motor.start(0)
-
-
-# pwm_back_left = 0
-# pwm_back_right = 0
-# pwm_forward_left = 0
-# pwm_forward_right = 0
-
-# max_speed = 45
-
-# l_state = "off"
-# r_state = "off"
-
-# prevTimeL = time.time()
-# prevTimeR = time.time()
-
-#_back_right = 0
-# 		prevTimeR = time.time()
-		
-# 	if keyboard.is_pressed('p'): //forward right
-# 		if(pwm_forward_right < max_speed):
-# 			if(r_state == "off"):
-# 				currTimeR = time.time()
-# 				prevTimeR = time.time()
-# 				r_state = "ramping"
-# 			elif(r_state == "ramping"):
-# 				currTimeR = time.time()
-# 				if(currTimeR - prevTimeR >= 0.5):
-# 					pwm_forward_right = pwm_forward_right + 5 
-# 					prevTimeR = currTimeR
-# 		else:
-# 			r_state = "at speed"
-# 			pwm_forward_right = max_speed
-# 	else:
-# 		pwm_forward_right = 0
-# 	sleep(0.01)
