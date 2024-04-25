@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO
+import RPi.GPIO as GPIOs
 import keyboard
 from time import sleep
 import time
@@ -157,6 +157,46 @@ def motorDirection(category_name: str = 'none'):
 		l_state = "off"
 
 
+def motorDirection2(category_name: str = 'none'):
+	global pwm_back_left, pwm_back_right, pwm_forward_left, pwm_forward_right, max_speed, forward_left_motor, backward_right_motor,forward_right_motor, backward_left_motor
+ 
+	if category_name == "forward":
+		pwm_forward_left = min(pwm_forward_left + 5, max_speed)
+		pwm_back_left = 0
+		pwm_forward_right = min(pwm_forward_right + 5, max_speed)
+		pwm_back_right = 0
+		if(pwm_forward_left != pwm_forward_right):
+			pwm_forward_left = max(pwm_forward_left, pwm_forward_right)
+			pwm_forward_right = pwm_forward_left
+	elif category_name == "backward":
+		pwm_back_left = min(pwm_back_left + 5, max_speed)
+		pwm_back_right = min(pwm_back_right + 5, max_speed)
+		pwm_forward_left = 0
+		pwm_forward_right = 0
+		if(pwm_back_left != pwm_back_right):
+			pwm_back_left = max(pwm_back_left, pwm_back_right)
+			pwm_back_right = pwm_back_left
+	elif category_name == "left":
+		pwm_forward_left = min(pwm_forward_left + 5, max_speed)
+		pwm_back_left = 0
+		pwm_back_right = 0
+		pwm_forward_right = 0
+	elif category_name == "right":
+		pwm_forward_right = min(pwm_forward_right + 5, max_speed)
+		pwm_back_left = 0
+		pwm_back_right = 0
+		pwm_forward_left = 0
+	elif category_name == "stop":
+		pwm_back_left = 0
+		pwm_back_right = 0
+		pwm_forward_right = 0
+		pwm_forward_left = 0
+  
+	forward_left_motor.ChangeDutyCycle(pwm_forward_left)
+	forward_right_motor.ChangeDutyCycle(pwm_forward_right)
+	backward_left_motor.ChangeDutyCycle(pwm_back_left)
+	backward_right_motor.ChangeDutyCycle(pwm_back_right)
+
 def get_control(model: str, num_hands: int,
 	min_hand_detection_confidence: float,
 	min_hand_presence_confidence: float, min_tracking_confidence: float,
@@ -211,10 +251,6 @@ def get_control(model: str, num_hands: int,
 
 	# Continuously capture images from the camera and run inference
 	while cap.isOpened():
-		forward_left_motor.ChangeDutyCycle(pwm_forward_left)
-		forward_right_motor.ChangeDutyCycle(pwm_forward_right)
-		backward_left_motor.ChangeDutyCycle(pwm_back_left)
-		backward_right_motor.ChangeDutyCycle(pwm_back_right)
 		success, image = cap.read()
 		if not success:
 			sys.exit(
@@ -237,7 +273,11 @@ def get_control(model: str, num_hands: int,
 					gesture = recognition_result_list[0].gestures[hand_index]
 					category_name = gesture[0].category_name
 					print(category_name)
-					motorDirection(category_name=category_name)
+					motorDirection2(category_name=category_name)
+					# forward_left_motor.ChangeDutyCycle(pwm_forward_left)
+					# forward_right_motor.ChangeDutyCycle(pwm_forward_right)
+					# backward_left_motor.ChangeDutyCycle(pwm_back_left)
+					# backward_right_motor.ChangeDutyCycle(pwm_back_right)
 
 		recognition_frame = current_frame
 		recognition_result_list.clear()
